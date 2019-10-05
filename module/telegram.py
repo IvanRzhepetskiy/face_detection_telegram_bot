@@ -1,9 +1,6 @@
 import module.database_wrapper as database_wrapper
 from contextlib import contextmanager
 
-def search_picture(picture):
-    pass
-
 class User(object):
     def __init__(self, uid):
         self.uid = str(uid)

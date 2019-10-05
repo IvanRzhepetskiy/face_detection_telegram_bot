@@ -7,6 +7,7 @@ from const import TELEGRAM_TOKEN, TELEGRAM_COMMANDS, TELEGRAM_BACK, PAYMENT_CRED
 from telebot import types
 
 import module.telegram as tg
+import module.picture_manager as pm
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 
@@ -18,7 +19,7 @@ def build_reply_keyboard(kb_texts:list):
     keyboard.add(*buttons) #Adding buttons in keyboard
     return keyboard
 
-MENU_KEYBOARD = build_reply_keyboard(TELEGRAM_COMMANDS)
+MENU_KEYBOARD = build_reply_keyboard(TELEGRAM_COMMANDS) #main menu keyboard
 
 @bot.message_handler(commands=["start"])
 def start(msg):
@@ -28,19 +29,18 @@ def start(msg):
 #0 - /find - Find by image 🖼️
 #1 - /buy - Buy premium 💳
 
-
 @bot.message_handler(content_types=["text"])
 def main_handler(msg):
     if msg.text in TELEGRAM_COMMANDS:
-        if msg.text == TELEGRAM_COMMANDS[0]:
+        if msg.text == TELEGRAM_COMMANDS[0]: # /find command
             if check_for_premium(msg):
                 kb = build_reply_keyboard(TELEGRAM_BACK)
                 send = bot.send_message(msg.chat.id, "Send me a photo of the person, which you want to find", reply_markup=kb)
                 bot.register_next_step_handler(send, get_image)
-        elif msg.text == TELEGRAM_COMMANDS[1]:
+        elif msg.text == TELEGRAM_COMMANDS[1]: # /buy command
             pass
 
-def get_image(msg):
+def get_image(msg): #second step of /find command
     if msg.text in TELEGRAM_BACK:
         bot.send_message(msg.chat.id, "Returning back to menu", reply_markup=MENU_KEYBOARD)
     if msg.photo:
