@@ -46,6 +46,12 @@ def get_image(msg): #second step of /find command
     if msg.photo:
         print(msg.photo)
         bot.send_message(msg.chat.id, "Processing your image", reply_markup=MENU_KEYBOARD)
+        photo_cred = bot.get_file(msg.photo[0].file_id)
+        picture = bot.download_file(photo_cred.file_path) #bytearray .jpg picture 
+        if pm.find_faces(picture) == 1:
+            pm.search_face(picture)
+        else:
+            pass
 
 def check_for_premium(msg):
     user = tg.User(msg.chat.id)
