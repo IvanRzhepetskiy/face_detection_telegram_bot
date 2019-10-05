@@ -1,11 +1,21 @@
 import imutils
 import cv2
+import numpy as np
+import urllib.request
+import cv2
+
+
+def url_to_image(url):
+    resp = urllib.request.urlopen(url)
+    image = np.asarray(bytearray(resp.read()), dtype="uint8")
+    image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+    return image
 
 #scans image for faces, if more than 1 face -> return 2, if == 1 return 1, if == 0 return 0
 #return -1 if image does not exist
 
 
-def find_faces(picture):
+def find_faces(url):
     faces_in_image_counter = 0
     confidence_given = 0.5
     proto_path = "caffee-deep-model/deploy.prototxt"
@@ -13,7 +23,7 @@ def find_faces(picture):
     detector = cv2.dnn.readNetFromCaffe(proto_path, model_path)
 
     try:
-        image = cv2.imread(picture)
+        image = url_to_image(url)
     except Exception as e:
         print(e)
         return -1
@@ -40,6 +50,8 @@ def find_faces(picture):
         return 1
     elif faces_in_image_counter == 0:
         return 0
+
+
 
 
 def search_face(face): #send face to findclone.ru, returns tuple (photo, number) 
