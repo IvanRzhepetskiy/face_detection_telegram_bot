@@ -16,6 +16,13 @@ def create_venv():
     print("###Installing packages")
     os.system("pip install -r requirements.txt")
 
+def create_db():
+    #temporary json db
+    print("###Creating json file")
+    with open("users.json", "w") as f:
+        f.write("{}")
+    return
+
 if __name__ == "__main__":
     create_venv()
-    
+    create_db()
