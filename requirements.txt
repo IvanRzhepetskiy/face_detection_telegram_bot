@@ -1,1 +1,3 @@
 pyTelegramBotAPI
+imutils
+opencv-python
