@@ -18,8 +18,8 @@ def url_to_image(url):
 def find_faces(url):
     faces_in_image_counter = 0
     confidence_given = 0.5
-    proto_path = "caffee-deep-model/deploy.prototxt"
-    model_path = "caffee-deep-model/res10_300x300_ssd_iter_140000.caffemodel"
+    proto_path = "module/caffee-deep-model/deploy.prototxt"
+    model_path = "module/caffee-deep-model/res10_300x300_ssd_iter_140000.caffemodel"
     detector = cv2.dnn.readNetFromCaffe(proto_path, model_path)
 
     try:
@@ -39,7 +39,7 @@ def find_faces(url):
     for i in range(0, detections.shape[2]):
 
         confidence = detections[0, 0, i, 2]
-        print(confidence)
+        # print(confidence)
 
         if confidence > confidence_given:
             faces_in_image_counter += 1
