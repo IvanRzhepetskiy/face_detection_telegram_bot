@@ -1,5 +1,6 @@
 import imutils
 import cv2
+import io
 
 #scans image for faces, if more than 1 face -> return 2, if == 1 return 1, if == 0 return 0
 #return -1 if image does not exist
@@ -8,8 +9,8 @@ import cv2
 def find_faces(picture):
     faces_in_image_counter = 0
     confidence_given = 0.5
-    proto_path = "caffee-deep-model/deploy.prototxt"
-    model_path = "caffee-deep-model/res10_300x300_ssd_iter_140000.caffemodel"
+    proto_path = "module/caffee-deep-model/deploy.prototxt"
+    model_path = "module/caffee-deep-model/res10_300x300_ssd_iter_140000.caffemodel"
     detector = cv2.dnn.readNetFromCaffe(proto_path, model_path)
 
     try:
@@ -29,7 +30,7 @@ def find_faces(picture):
     for i in range(0, detections.shape[2]):
 
         confidence = detections[0, 0, i, 2]
-        print(confidence)
+        # print(confidence)
 
         if confidence > confidence_given:
             faces_in_image_counter += 1
