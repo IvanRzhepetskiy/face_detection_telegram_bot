@@ -46,6 +46,20 @@ def get_image(msg): #second step of /find command
     if msg.photo:
         print(msg.photo)
         bot.send_message(msg.chat.id, "Processing your image", reply_markup=MENU_KEYBOARD)
+        photo_cred = bot.get_file(msg.photo[1].file_id)
+        picture = bot.download_file(photo_cred.file_path)
+        with open("pic.jpg", "wb") as pf:
+            pf.write(picture)
+        # picture = "https://api.telegram.org/file/bot{}/{}".format(TELEGRAM_TOKEN, photo_cred.file_path) #url .jpg picture
+        # print(picture)
+        quant_faces = pm.find_faces("pic.jpg")
+        if quant_faces == 1:
+            bot.send_message(msg.chat.id, "Picture has one face. Perfect!")
+            pm.search_face(picture)
+        elif quant_faces == 2:
+            bot.send_message(msg.chat.id, "Picture has more than one face, please crop it or send another one")
+        else:
+            bot.send_message(msg.chat.id, "Sorry, but i cant see faces on photo. Please, send another one")
 
 def check_for_premium(msg):
     user = tg.User(msg.chat.id)
