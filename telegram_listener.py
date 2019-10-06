@@ -3,7 +3,7 @@ import os
 import sys
 import time
 
-from const import TELEGRAM_TOKEN, TELEGRAM_COMMANDS, TELEGRAM_BACK, PAYMENT_CRED
+from const import TELEGRAM_TOKEN, TELEGRAM_COMMANDS, TELEGRAM_BACK, PAYMENT_CRED, RESPONSES, RU_LANGUAGE_SET
 from telebot import types
 
 import module.telegram as tg
@@ -19,11 +19,14 @@ def build_reply_keyboard(kb_texts:list):
     keyboard.add(*buttons) #Adding buttons in keyboard
     return keyboard
 
-MENU_KEYBOARD = build_reply_keyboard(TELEGRAM_COMMANDS) #main menu keyboard
+MENU_KEYBOARD = {"en":build_reply_keyboard(TELEGRAM_COMMANDS["en"]), "ru":build_reply_keyboard(TELEGRAM_COMMANDS["ru"])} #main menu keyboard
 
 @bot.message_handler(commands=["start"])
 def start(msg):
-    bot.send_message(msg.chat.id, "Welcoming text", reply_markup=MENU_KEYBOARD)
+    print(msg.from_user.language_code)
+    msg = language_set(msg)
+    print(msg.from_user.language_code)
+    bot.send_message(msg.chat.id, RESPONSES[msg.from_user.language_code]["welcome"], reply_markup=MENU_KEYBOARD[msg.from_user.language_code])
 
 #TELEGRAM_COMMANDS Cheatsheet
 #0 - /find - Find by image 🖼️
@@ -31,37 +34,51 @@ def start(msg):
 
 @bot.message_handler(content_types=["text"])
 def main_handler(msg):
-    if msg.text in TELEGRAM_COMMANDS:
-        if msg.text == TELEGRAM_COMMANDS[0]: # /find command
+    print(msg.from_user.language_code)
+    msg = language_set(msg)
+    if msg.text in TELEGRAM_COMMANDS[msg.from_user.language_code]:
+        if msg.text == TELEGRAM_COMMANDS[msg.from_user.language_code][0]: # /find command
             if check_for_premium(msg):
-                kb = build_reply_keyboard(TELEGRAM_BACK)
-                send = bot.send_message(msg.chat.id, "Send me a photo of the person, which you want to find", reply_markup=kb)
+                kb = build_reply_keyboard(TELEGRAM_BACK[msg.from_user.language_code])
+                send = bot.send_message(msg.chat.id, RESPONSES[msg.from_user.language_code]["find"], reply_markup=kb)
                 bot.register_next_step_handler(send, get_image)
-        elif msg.text == TELEGRAM_COMMANDS[1]: # /buy command
+        elif msg.text == TELEGRAM_COMMANDS[msg.from_user.language_code][1]: # /buy command
             pass
 
 def get_image(msg): #second step of /find command
-    if msg.text in TELEGRAM_BACK:
-        bot.send_message(msg.chat.id, "Returning back to menu", reply_markup=MENU_KEYBOARD)
+    msg = language_set(msg)
+    if msg.text in TELEGRAM_BACK[msg.from_user.language_code]:
+        bot.send_message(msg.chat.id, RESPONSES[msg.from_user.language_code]["return_back"], reply_markup=MENU_KEYBOARD[msg.from_user.language_code])
     if msg.photo:
         print(msg.photo)
-        bot.send_message(msg.chat.id, "Processing your image", reply_markup=MENU_KEYBOARD)
+        bot.send_message(msg.chat.id, RESPONSES[msg.from_user.language_code]["processing"], reply_markup=MENU_KEYBOARD[msg.from_user.language_code])
         photo_cred = bot.get_file(msg.photo[1].file_id)
         picture = "https://api.telegram.org/file/bot{}/{}".format(TELEGRAM_TOKEN, photo_cred.file_path) #url .jpg picture
         quant_faces = pm.find_faces(picture)
+        # Face-phrases
+        # 0 - No faces
+        # 1 - One face
+        # 2 - More than one
         if quant_faces == 1:
-            bot.send_message(msg.chat.id, "Picture has one face. Perfect!")
+            bot.send_message(msg.chat.id, RESPONSES[msg.from_user.language_code]["face"][1])
             pm.search_face(picture)
         elif quant_faces == 2:
-            bot.send_message(msg.chat.id, "Picture has more than one face, please crop it or send another one")
+            bot.send_message(msg.chat.id, RESPONSES[msg.form_user.language_code]["face"][2])
         else:
-            bot.send_message(msg.chat.id, "Sorry, but i cant see faces on photo. Please, send another one")
+            bot.send_message(msg.chat.id, RESPONSES[msg.from_user.language_code]["face"][0])
+
+def language_set(msg):
+    if msg.from_user.language_code in RU_LANGUAGE_SET:
+        msg.from_user.language_code = "ru"
+    else:
+        msg.from_user.language_code = "en"
+    return msg
 
 def check_for_premium(msg):
     user = tg.User(msg.chat.id)
     if user.premium:
         return True
-    bot.send_message(msg.chat.id, "Sorry, but you get the limit for requests per month\nYou can buy more requests via Buy premium 💳 button!")
+    bot.send_message(msg.chat.id, RESPONSES[msg.from_user.language_code]["no_premium"])
     return False
 
 def main_loop():
